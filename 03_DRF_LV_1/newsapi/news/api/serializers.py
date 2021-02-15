@@ -3,16 +3,11 @@ from django.utils.timesince import timesince
 from rest_framework import serializers
 from news.models import Article, Journalist
 
-class JournalistSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Journalist
-        fields = "__all__"
 
 class ArticleSerializer(serializers.ModelSerializer):
 
     time_since_publication = serializers.SerializerMethodField()
-    author = JournalistSerializer()
-
+    # author = JournalistSerializer()
     class Meta:
         model = Article
         # fields = "__all__"
@@ -30,16 +25,19 @@ class ArticleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationErrror("Titolo o Descizione devono essere differenti")
         return data
 
-
     def validate_title(self, value):
         if len(value) < 60:
             raise serializers.ValidationError("Scivi un titolo che abbia almeno 60 carattiri")
         return value
 
-    def validate_description(self, value):
-        if len(value) < 80:
-            raise serializers.ValidationError("Descrivi gli articoli con almeno 80 caratteri")
-        return value
+class JournalistSerializer(serializers.ModelSerializer):
+    articles = serializers.HyperlinkedRelatedField(many=True,
+                                    read_only=True,
+                                    view_name="article-detail")
+    class Meta:
+        model = Journalist
+        fields = "__all__"
+
 
 # class ArticleSerializer(serializers.Serializer):
 #     id = serializers.IntegerField(read_only=True)
